@@ -5,13 +5,13 @@ import socket
 class udpServer:
 
     UDP_PORT_NO = 6664
-    UDP_IP_ADDR = "0.0.0.0"
+    #UDP_IP_ADDR = "0.0.0.0"
     #UDP_IP_ADDR = "192.168.11.101"
-    #UDP_IP_ADDR = "127.0.0.1"
+    UDP_IP_ADDR = "127.0.0.1"
     SV_SOCKET = 0
 
     def __init__(self):
-        pass
+        print("UDP Server says: I am alive!")
 
     def connect(self):
         self.SV_SOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

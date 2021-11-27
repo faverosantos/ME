@@ -1,16 +1,14 @@
 # A code by Fávero Santos @ Curitiba, Paraná, Brazil in 25/11/2021
 
-from udp import udpServer
+from processor import Processor
+
 
 def main():
-    print("Aloha!")
-    myUDPServer = udpServer()
-    myUDPServer.connect()
+    print("Main says: Aloha, everybody!")
+    myProcessor = Processor()
 
     while True:
-        print("Data from UDP:" + str(myUDPServer.getData()))
-
+        myProcessor.listen()
 
 if __name__ == '__main__':
     main()
-
