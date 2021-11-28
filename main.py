@@ -8,7 +8,8 @@ def main():
     myProcessor = Processor()
 
     while True:
-        myProcessor.listen()
+        pass
+        #myProcessor.listen()
 
 if __name__ == '__main__':
     main()

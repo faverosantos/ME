@@ -17,6 +17,10 @@ def udpWorker(name: str) -> None:
 class Processor:
 
     myUDPServer = 0
+    package = bytearray()
+    newMessage = False
+    processesList = list()
+    packageReady = False
 
     def __init__(self):
         print("Processor says: I am alive!")
@@ -25,17 +29,52 @@ class Processor:
         self.myUDPServer.connect()
 
         if defines.DEBUG_MODE is True:
-            processesList = list()
+
             udpClientProcess = multiprocessing.Process(target=udpWorker, args=("udpClient",))
-            processesList.append(udpClientProcess)
+            self.processesList.append(udpClientProcess)
             udpClientProcess.start()
 
-    def listen(self):
-        receivedData = self.myUDPServer.getData()
-        #print("Data from UDP: " + str(receivedData))
-        if receivedData[0:4] == bytearray([0xCA, 0xCB, 0xCC, 0xCD]):
-            receivedDataLen = len(receivedData)
-            payload = receivedData[receivedDataLen-7:receivedDataLen-4]
-            print(f"Received payload is: {payload}")
+        udpServerListener = multiprocessing.Process(target=self.listen, args=("udpServerListener",))
+        self.processesList.append(udpServerListener)
+        udpServerListener.start()
 
-        # Para ler os hex posicionalmente, é possível usar hex(receivedData[index])
+        udpServerProcessor = multiprocessing.Process(target=self.process, args=("udpServerProcessor",))
+        self.processesList.append(udpServerProcessor)
+        udpServerProcessor.start()
+
+    def listen(self, name: str) -> None:
+        'This is the multi-process version of the listen function. It listens and create a package from the messages received by UDP'
+        while True:
+            receivedData = self.myUDPServer.getData()
+            if receivedData[0:4] == defines.HEADER and self.newMessage is False:
+                self.newMessage = True
+
+            elif receivedData[len(receivedData)-4:len(receivedData)] == defines.FOOTER and self.newMessage is True:
+                self.newMessage = False
+                self.package.clear()
+            else:
+                self.package = self.package + receivedData
+                print("Mesangem recebida é:" + str(self.package))
+                self.packageReady = True
+            time.sleep(0.1)
+
+    def process(self, name: str) -> None:
+        print("Processor 'process' function is working!")
+        'This function is responsible for processing the data made available at listen function'
+        while True:
+            self.packageReady = False #TODO: implementar como mutex a flag packageRDY
+            time.sleep(0.1)
+
+    #def listen(self):
+    #    'This is the original version of the listen function. It listens and create a package from the messages received by UDP'
+    #    receivedData = self.myUDPServer.getData()
+    #    if receivedData[0:4] == defines.header and self.newMessage is False:
+    #        self.newMessage = True
+    #
+    #    elif receivedData[len(receivedData)-4:len(receivedData)] == defines.footer and self.newMessage is True:
+    #        self.newMessage = False
+    #        self.package.clear()
+    #    else:
+    #        self.package = self.package + receivedData
+    #        print("Mesangem recebida é:" + str(self.package))
+
