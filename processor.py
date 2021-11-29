@@ -1,7 +1,9 @@
 from udpserver import udpServer
+from object import Object
 import defines as defines
 import multiprocessing
 from multiprocessing import Queue
+
 
 import time
 
@@ -25,8 +27,11 @@ class Processor:
 
     packageReady = False
 
-    myQueue = Queue()
-    'myQueue é a fila de pacotes divida entre os dois processos'
+    packageQueue = Queue()
+    'packageQueue é a fila de pacotes divida entre os processos'
+
+    objectQueue = Queue()
+    'objectQueue é a fila de objetos divida entre os processos'
 
     def __init__(self):
         print("Processor says: I am alive!")
@@ -39,15 +44,15 @@ class Processor:
             self.processesList.append(udpClientProcess)
             udpClientProcess.start()
 
-        udpServerListener = multiprocessing.Process(target=self.listen, args=("udpServerListener", self.myQueue))
+        udpServerListener = multiprocessing.Process(target=self.listen, args=("udpServerListener", self.packageQueue))
         self.processesList.append(udpServerListener)
         udpServerListener.start()
 
-        udpServerProcessor = multiprocessing.Process(target=self.process, args=("udpServerProcessor", self.myQueue))
+        udpServerProcessor = multiprocessing.Process(target=self.process, args=("udpServerProcessor", self.packageQueue, self.objectQueue))
         self.processesList.append(udpServerProcessor)
         udpServerProcessor.start()
 
-    def listen(self, name, myQueue):
+    def listen(self, name, packageQueue):
         'This is the multi-process version of the listen function. It listens and create a package from the messages received by UDP'
 
         newMessage = False
@@ -62,8 +67,7 @@ class Processor:
             elif receivedData[len(receivedData)-4:len(receivedData)] == defines.FOOTER and newMessage is True:
                 newMessage = False
 
-                myQueue.put(package)
-
+                packageQueue.put(package)
                 package = bytearray()
 
             elif newMessage is True:
@@ -73,36 +77,51 @@ class Processor:
                 pass
             time.sleep(0.1)
 
-    def process(self, name, myQueue):
+    def process(self, name, packageQueue, objectQueue):
         print("Processor 'process' function is working!")
         'This function is responsible for processing data made available from the listen function'
         while True:
-            messageToProcess = myQueue.get()
+            messageToProcess = packageQueue.get()
 
             # TODO: aqui seria legal implementar usando uma pesquisa em array
 
-
-            print("Mensagem para ser processada (ANTES): " + str(messageToProcess))
-
-            retries = 3
+            #print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
+            #print("Comprimento antes: " + str(len(messageToProcess)))
+            retries = 4
             while retries > 0:
                 if messageToProcess[0:2] == defines.OBJECT_CONTROL:
                     print("OBJECT_CONTROL recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
+
                 elif messageToProcess[0:2] == defines.SENSOR_CONTROL:
                     print("SENSOR_CONTROL recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
+
                 elif messageToProcess[0:2] == defines.OBJECT_DATA_1:
-                    print("OBJECT_CONTROL recebido!")
+                    print("OBJECT_DATA_1 recebido! " + str(messageToProcess))
+
+                    #if objectQueue.contains(defines.OBJECT_DATA_1):
+                    #    aVehicle.setPosition(6,7)
+                    #    aVehicle.setVelocity(8,9)
+                    #    objectQueue.append(aVehicle)
+                    #else:
+                    #    aVehicle = Object()
+                    #    aVehicle.setId(0)
+                    #    aVehicle.setPosition(1,2)
+                    #    aVehicle.setVelocity(3,4)
+                    #    objectQueue.append(aVehicle)
+                    
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
+
                 elif messageToProcess[0:2] == defines.SYNC_MESSAGE:
                     print("SYNC_MESSAGE recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
-                print("Mensagem para ser processada (DEPOIS): " + str(messageToProcess))
+
+                #print("Mensagem para ser processada (DEPOIS): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
                 retries = retries - 1
 
             #self.packageList.pop(0)
