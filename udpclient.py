@@ -9,8 +9,9 @@ class udpClient:
     UDP_PORT_NO = 6664
 
     clientSocket = 0
-    payload = bytearray([0x01, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])
+    payload = bytearray([0x00, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0])
     objectIdCounter = 0
+
     messageToBeSent = defines.HEADER + payload + defines.FOOTER
 
     def __init__(self):
@@ -23,12 +24,12 @@ class udpClient:
     def sendData(self):
         self.clientSocket.sendto(defines.HEADER, (self.UDP_IP_ADDRESS, self.UDP_PORT_NO))
 
-        if self.objectIdCounter < 127:
+        self.payload[0] = self.objectIdCounter
+        self.clientSocket.sendto(self.payload, (self.UDP_IP_ADDRESS, self.UDP_PORT_NO))
+
+        if self.objectIdCounter < 9:
             self.objectIdCounter = self.objectIdCounter + 1
         else:
             self.objectIdCounter = 0
-
-        self.payload[0] = self.objectIdCounter
-        self.clientSocket.sendto(self.payload, (self.UDP_IP_ADDRESS, self.UDP_PORT_NO))
 
         self.clientSocket.sendto(defines.FOOTER, (self.UDP_IP_ADDRESS, self.UDP_PORT_NO))

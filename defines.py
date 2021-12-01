@@ -2,7 +2,10 @@
 import numpy as np
 
 # Flags de controle de fluxo de software
-DEBUG_MODE = True
+DEBUG_MODE = False
+
+# Definições de valores de operações
+MAX_OBJECTS = 0x7F
 
 # Dados importantes para o protocolo do Doppler
 'Fonte: 2019-02-22_Doc_Data Communication UMRR Traffic Management_UMRR0C'
@@ -11,7 +14,7 @@ FOOTER = bytearray([0xEA, 0xEB, 0xEC, 0xED])
 OBJECT_CONTROL = bytearray([0x05, 0x01])
 FIRST_OBJECT_DATA = bytearray([0x05, 0x02])
 INT_FIRST_OBJECT_DATA = int.from_bytes(FIRST_OBJECT_DATA, byteorder='little')
-LAST_OBJECT_DATA = bytearray([0x05, 0x7F])
+LAST_OBJECT_DATA = bytearray([0x05, 2*MAX_OBJECTS])
 INT_LAST_OBJECT_DATA = int.from_bytes(LAST_OBJECT_DATA, byteorder='little')
 SYNC_MESSAGE = bytearray([0x02, 0xFF])
 SENSOR_CONTROL = bytearray([0x05, 0x00])

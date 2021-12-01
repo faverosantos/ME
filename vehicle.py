@@ -1,12 +1,13 @@
 
-class Object:
+class Vehicle:
     id = 0
     len = 0
-    position = list()
-    velocity = list()
+    position = 0
+    velocity = 0
 
     def __init__(self):
-        pass
+        self.position = list()
+        self.velocity = list()
 
     def setId(self, id):
         self.id = id
@@ -33,7 +34,3 @@ class Object:
 
     def getVelocity(self):
         return self.velocity
-
-    def __del__(self):
-        pass
-

@@ -1,9 +1,10 @@
 import numpy as np
 
 from udpserver import udpServer
-from object import Object
+from vehicle import Vehicle
 import kernel as kernel
 import defines as defines
+from collections import deque
 import multiprocessing
 from multiprocessing import Queue
 
@@ -85,30 +86,34 @@ class Processor:
         print("Processor 'process' function is working!")
         'This function is responsible for managing objects'
 
-        objectList = [Object]*127
+        vehicleList = list()
+        for index in range(3*defines.MAX_OBJECTS):
+            newVehicle = Vehicle()
+            vehicleList.append(newVehicle)
+            del newVehicle
 
         while True:
             #TODO: tratar a exceção caso o packageQueue esteja vazio
             messageToProcess = packageQueue.get()
 
-
-            print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
+            #print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
             #print("Comprimento antes: " + str(len(messageToProcess)))
             retries = 10
             while retries > 0:
                 intMessageToProcess = int.from_bytes(messageToProcess[0:2], byteorder='little')
                 if messageToProcess[0:2] == defines.OBJECT_CONTROL:
-                    print("OBJECT_CONTROL recebido!")
+                    #print("OBJECT_CONTROL recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
 
                 elif messageToProcess[0:2] == defines.SENSOR_CONTROL:
-                    print("SENSOR_CONTROL recebido!")
+                    #print("SENSOR_CONTROL recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
 
                 elif intMessageToProcess <= defines.INT_LAST_OBJECT_DATA and intMessageToProcess >= defines.INT_FIRST_OBJECT_DATA:
-                    print("OBJECT_DATA recebido!")
+                    #print("OBJECT_DATA recebido!")
+                    print("")
 
                     if defines.DEBUG_MODE:
                         data = messageToProcess
@@ -117,17 +122,21 @@ class Processor:
 
                     # Faz o que tem que fazer, remove da lista
                     if len(data) == 8:
-                        objectData = kernel.decodeObjectData(bytearray(data))
-                        objectList[objectData[0]].setId(objectData[0]) # A própria posição na lista é o id do objeto ;)
-                        objectList[objectData[0]].setLen(objectData[1])
-                        objectList[objectData[0]].setPosition(objectData[2], objectData[3])
-                        objectList[objectData[0]].setVelocity(objectData[4], objectData[5])
+                        [id, com, posX, posY, velX, velY] = kernel.decodeObjectData(bytearray(data))
+
+                        if len(vehicleList[id].getPosition()) == 0:
+                            vehicleList[id].setId(id)
+                            vehicleList[id].setLen(com)
+                            vehicleList[id].setPosition(posX, posY)
+                            vehicleList[id].setVelocity(velX, velY)
+                        else:
+                            vehicleList[id].setPosition(posX, posY)
+                            vehicleList[id].setVelocity(velX, velY)
 
                     messageToProcess = messageToProcess[11:]
 
-
                 elif messageToProcess[0:2] == defines.SYNC_MESSAGE:
-                    print("SYNC_MESSAGE recebido!")
+                    #print("SYNC_MESSAGE recebido!")
                     messageToProcess = messageToProcess[11:]
                     # Faz o que tem que fazer, remove da lista
 
