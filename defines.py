@@ -1,6 +1,8 @@
 
+import numpy as np
+
 # Flags de controle de fluxo de software
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 # Dados importantes para o protocolo do Doppler
 'Fonte: 2019-02-22_Doc_Data Communication UMRR Traffic Management_UMRR0C'
@@ -22,9 +24,3 @@ OBJECT_LEN = bytearray([0x00, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 OBJECT_ID = bytearray([0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 
 REFRESH_TIME_MS = 0.5
-
-def oldPythonAnd(mask, data):
-    anded = data
-    for index in range(len(anded)):
-        anded[index] = mask[index] & data[index]
-    return anded

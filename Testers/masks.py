@@ -1,6 +1,9 @@
 
 import numpy as np
 import defines
+import kernel as kernel
+import object as Object
+import collections
 
 MASK_POSX = bytearray([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xFE])
 MASK_POSY = bytearray([0x00, 0x00, 0x00, 0x00, 0x07, 0xFF, 0xC0, 0x00])
@@ -12,43 +15,25 @@ OBJECT_ID = bytearray([0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 def main():
     print("Main says: Aloha, everybody!")
 
+    teste = bytearray([0xCA, 0xFE, 0xBA, 0xBE])
+    print(int.from_bytes(teste, byteorder='big'))
+    teste.reverse()
+    print(teste)
+    print(int.from_bytes(teste, byteorder='little'))
+
+
+
+
     #data = bytearray([0x05, 0x02, 0x08, 0x84, 0x29, 0x00, 0xAC, 0x1B, 0x00, 0x2F, 0x06])
-    data = bytearray([0x84, 0x29, 0x00, 0xAC, 0x1B, 0x00, 0x2F, 0x06])
+    data = bytearray([0x41, 0x2F, 0x00, 0x1F, 0x9b, 0xe9, 0x61, 0x74])
 
-    posX = np.bitwise_and(MASK_POSX, data)
-    print(posX)
+    a = kernel.decodeObjectData(data)
 
-    anded = defines.oldPythonAnd(MASK_POSX, data)
-    print(anded)
+    objectList = [Object]*127
 
-    posX = posX[6:8]
-    posXdec = float(int.from_bytes(posX, byteorder='little'))*0.128
-    print(posXdec)
+    pass
 
-    posY = MASK_POSY and data
-    posY = posY[4:7]
-    posYdec = float(int.from_bytes(posY, byteorder='little'))*0.128
-    print(posYdec)
 
-    velX = MASK_VELX and data
-    velX = velX[3:5]
-    velXdec = float(int.from_bytes(velX, byteorder='little'))*0.1
-    print(velXdec)
-
-    velY = MASK_VELY and data
-    velY = velY[1:4]
-    velYdec = float(int.from_bytes(velY, byteorder='little'))*0.1
-    print(velYdec)
-
-    objLen = OBJECT_LEN and data
-    objLen = objLen[1:2]
-    objLenDec = float(int.from_bytes(objLen, byteorder='little')*0.2)
-    print(objLenDec)
-
-    objId = OBJECT_ID and data
-    objId = objId[0:1]
-    objIdDec = int.from_bytes(objId, byteorder='little')
-    print(objIdDec)
 
 if __name__ == '__main__':
     main()

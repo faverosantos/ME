@@ -2,8 +2,8 @@ import numpy as np
 
 from udpserver import udpServer
 from object import Object
+import kernel as kernel
 import defines as defines
-#import numpy as np
 import multiprocessing
 from multiprocessing import Queue
 
@@ -35,6 +35,7 @@ class Processor:
 
     objectQueue = Queue()
     'objectQueue é a fila de objetos divida entre os processos'
+
 
     def __init__(self):
         print("Processor says: I am alive!")
@@ -82,14 +83,16 @@ class Processor:
 
     def process(self, name, packageQueue, objectQueue):
         print("Processor 'process' function is working!")
-        'This function is responsible for processing data made available from the listen function'
+        'This function is responsible for managing objects'
+
+        objectList = [Object]*127
+
         while True:
             #TODO: tratar a exceção caso o packageQueue esteja vazio
             messageToProcess = packageQueue.get()
 
-            # TODO: aqui seria legal implementar usando uma pesquisa em array
 
-            #print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
+            print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
             #print("Comprimento antes: " + str(len(messageToProcess)))
             retries = 10
             while retries > 0:
@@ -112,39 +115,16 @@ class Processor:
                     else:
                         data = messageToProcess[3:11]
 
-                    posX = defines.oldPythonAnd(defines.MASK_POSX, bytearray(data))
-                    #np.bitwise_and(defines.MASK_POSX, data)
-                    posX = posX[6:8]
-                    posXdec = (int.from_bytes(posX, byteorder='big') - 4096) * 0.128
-                    print("Posição x: " + str(posXdec))
-
-                    posY = defines.oldPythonAnd(defines.MASK_POSY, bytearray(data))
-                    posY = posY[4:7]
-                    posYdec = (int.from_bytes(posY, byteorder='big') - 4096) * 0.128
-                    print("Posição y: " + str(posYdec))
-
-                    velX = defines.oldPythonAnd(defines.MASK_VELX, bytearray(data))
-                    velX = velX[3:5]
-                    velXdec = (int.from_bytes(velX, byteorder='big') - 1024) * 0.1
-                    print("Velocidade x: " + str(velXdec))
-
-                    velY = defines.oldPythonAnd(defines.MASK_VELY, bytearray(data))
-                    velY = velY[1:4]
-                    velYdec = (int.from_bytes(velY, byteorder='big') - 1024) * 0.1
-                    print("Velocidade y: " + str(velYdec))
-
-                    objLen = defines.oldPythonAnd(defines.OBJECT_LEN, bytearray(data))
-                    objLen = objLen[1:2]
-                    objLenDec = int.from_bytes(objLen, byteorder='big')
-                    print("Comprimento objeto: " + str(objLenDec))
-
-                    objId = defines.oldPythonAnd(defines.OBJECT_ID, bytearray(data))
-                    objId = objId[0:1]
-                    objIdDec = int.from_bytes(objId, byteorder='big')
-                    print("Id do objeto: " + str(objIdDec))
+                    # Faz o que tem que fazer, remove da lista
+                    if len(data) == 8:
+                        objectData = kernel.decodeObjectData(bytearray(data))
+                        objectList[objectData[0]].setId(objectData[0]) # A própria posição na lista é o id do objeto ;)
+                        objectList[objectData[0]].setLen(objectData[1])
+                        objectList[objectData[0]].setPosition(objectData[2], objectData[3])
+                        objectList[objectData[0]].setVelocity(objectData[4], objectData[5])
 
                     messageToProcess = messageToProcess[11:]
-                    # Faz o que tem que fazer, remove da lista
+
 
                 elif messageToProcess[0:2] == defines.SYNC_MESSAGE:
                     print("SYNC_MESSAGE recebido!")

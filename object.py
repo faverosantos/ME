@@ -1,9 +1,9 @@
 
 class Object:
     id = 0
+    len = 0
     position = list()
     velocity = list()
-
 
     def __init__(self):
         pass
@@ -13,6 +13,12 @@ class Object:
 
     def getId(self):
         return self.id
+
+    def setLen(self, len):
+        self.len = len
+
+    def getLen(self):
+        return self.len
 
     def setPosition(self, posX, posY):
         pair = (posX, posY)
