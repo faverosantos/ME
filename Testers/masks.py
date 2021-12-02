@@ -30,7 +30,7 @@ def main():
 
 
 
-    a = kernel.decodeObjectData(data)
+    a = kernel.decodeObjectControlMessage(data)
 
     pass
 

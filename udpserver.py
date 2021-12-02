@@ -18,5 +18,5 @@ class udpServer:
         self.SV_SOCKET.bind((self.UDP_IP_ADDR, self.UDP_PORT_NO))
 
     def getData(self):
-        data, addr = self.SV_SOCKET.recvfrom(1024)
+        data, addr = self.SV_SOCKET.recvfrom(4096)
         return data
