@@ -44,6 +44,9 @@ class Processor:
         self.myUDPServer = udpServer()
         self.myUDPServer.connect()
 
+        #manager = multiprocessing.Manager()
+        #mutex = manager.Lock()
+
         if defines.DEBUG_MODE is True:
             udpClientProcess = multiprocessing.Process(target=udpWorker, args=("udpClient",))
             self.processesList.append(udpClientProcess)
@@ -76,10 +79,12 @@ class Processor:
 
                 package = package + receivedData[:len(receivedData)-5]
                 # TODO: na verdade é len(receivedData)-4, já que a posição -5 é o CRC do dado, que nesse código não está sendo tratado.
-                print("Package: " + str(package))
+                #print("Listened package: " + str(package) + "with size: " + str(len(package)))
+                #print("Listen package len:" + str(len(package)))
 
                 packageQueue.put(package)
                 package = bytearray()
+                receivedData = 0
 
             elif newMessage is True:
                 # TODO: Deve existir uma verificação de primeira mensagem aqui para que não fique acumulando mensagens indevidas
@@ -87,7 +92,8 @@ class Processor:
                 package = package + receivedData
 
             else:
-                pass
+                package = bytearray()
+                receivedData = 0
             #time.sleep(0.1)
 
     def process(self, name, packageQueue, objectQueue):
@@ -103,20 +109,22 @@ class Processor:
         while True:
             #TODO: tratar a exceção caso o packageQueue esteja vazio
 
-            BYPASS = False
+            PROCESS = True
 
-            messageToProcess = packageQueue.get()
-            print("New message arrived with len:" + str(len(messageToProcess)))
+            messageToProcess = bytearray()
+            messageToProcess = bytearray(packageQueue.get()).copy()
+            #print("Processor package len:" + str(len(messageToProcess)))
 
-            if len(messageToProcess) < 100:
-                print("Bypassed!")
-                BYPASS = True
+            #if len(messageToProcess) < 100:
+            #    print("Bypassed!")
+            #    messageToProcess = 0
+            #    PROCESS = False
 
             #print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
             #print("Comprimento antes: " + str(len(messageToProcess)))
             #retries = 20
 
-            if not BYPASS:
+            if PROCESS:
                 while len(messageToProcess) > 0:# or retries > 0:
                     if messageToProcess[0:2] == defines.OBJECT_CONTROL:
                         print("OBJECT_CONTROL recebido!")
@@ -124,7 +132,7 @@ class Processor:
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("OBJECT_CONTROL processado!")
                             data = messageToProcess[3:11]
-                            objectControlResult = kernel.decodeObjectControlMessage(bytearray(data))
+                            #objectControlResult = kernel.decodeObjectControlMessage(bytearray(data))
                             messageToProcess = messageToProcess[11:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -136,7 +144,19 @@ class Processor:
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("SM_TIME_MESSAGE processado!")
                             data = messageToProcess[3:11]
-                            objectControlResult = kernel.decodeTimeMessage(bytearray(data))
+                            #objectControlResult = kernel.decodeTimeMessage(bytearray(data))
+                            messageToProcess = messageToProcess[11:]
+                            #print("Depois: " + str(messageToProcess))
+
+                        print("")
+
+                    elif messageToProcess[0:2] == defines.SM_0x734:
+                        print("SM_0x74 recebido!")
+                        #print(messageToProcess)
+
+                        if messageToProcess[2:3] == bytearray([0x08]):
+                            print("SM_0x74 processado")
+                            data = messageToProcess[3:11]
                             messageToProcess = messageToProcess[11:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -144,12 +164,12 @@ class Processor:
 
                     elif messageToProcess[0:2] == defines.SM_0x782:
                         print("SM_0x782 recebido!")
-                        print(messageToProcess)
+                        #print(messageToProcess)
 
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("SM_0x782 processado")
                             data = messageToProcess[3:11]
-                            timeResult = kernel.decodeTimeMessage(bytearray(data))
+                            #timeResult = kernel.decodeTimeMessage(bytearray(data))
                             messageToProcess = messageToProcess[11:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -162,7 +182,7 @@ class Processor:
                         if messageToProcess[2:3] == bytearray([0x02]):
                             print("wrongDirectionResult processado")
                             data = messageToProcess[3:5]
-                            wrongDirectionResult = kernel.decodeWrongDirectionMessage(bytearray(data))
+                            #wrongDirectionResult = kernel.decodeWrongDirectionMessage(bytearray(data))
                             messageToProcess = messageToProcess[5:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -175,14 +195,14 @@ class Processor:
                         elif messageToProcess[2:3] == bytearray([0x05]):
                             print("relayControlResult processado")
                             data = messageToProcess[3:8]
-                            relayControlResult = kernel.decodeRelayControlMessage(bytearray(data))
+                            #relayControlResult = kernel.decodeRelayControlMessage(bytearray(data))
                             messageToProcess = messageToProcess[8:]
                             #print("Depois: " + str(messageToProcess))
 
                         elif messageToProcess[2:3] == bytearray([0x06]):
                             print("presenceResult processado")
                             data = messageToProcess[3:9]
-                            presenceResult = kernel.decodePresenceMessage(bytearray(data))
+                            #presenceResult = kernel.decodePresenceMessage(bytearray(data))
                             messageToProcess = messageToProcess[9:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -193,18 +213,18 @@ class Processor:
                         print(messageToProcess)
 
                         if messageToProcess[2:3] == bytearray([0x03]):
-                            print("SM_0x784 processado!")
+                            print("SM_0x784 len 3 processado!")
                             data = messageToProcess[3:6]
                             messageToProcess = messageToProcess[6:]
                             print("Depois: " + str(messageToProcess))
-                            print("Len mensagem: " + str(len(messageToProcess)))
+                            #print("Len mensagem: " + str(len(messageToProcess)))
 
                         if messageToProcess[2:3] == bytearray([0x04]):
-                            print("SM_0x784 processado!")
+                            print("SM_0x784 len 4 processado!")
                             data = messageToProcess[3:7]
                             messageToProcess = messageToProcess[7:]
                             #print("Depois: " + str(messageToProcess))
-                            print("Len mensagem: " + str(len(messageToProcess)))
+                            #print("Len mensagem: " + str(len(messageToProcess)))
 
                         print("")
 
@@ -226,7 +246,7 @@ class Processor:
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("SENSOR_CONTROL processado!")
                             data = messageToProcess[3:11]
-                            sensorControlResult = kernel.decodeSensorControlMessage(bytearray(data))
+                            #sensorControlResult = kernel.decodeSensorControlMessage(bytearray(data))
                             messageToProcess = messageToProcess[11:]
                             #print("Depois: " + str(messageToProcess))
 
@@ -257,19 +277,20 @@ class Processor:
                         print("SYNC_MESSAGE recebido!")
 
                         if messageToProcess[2:3] == bytearray([0x08]):
-                            print("SYNC_MESSAGE processado!")
+                            #print("SYNC_MESSAGE processado!")
                             data = messageToProcess[3:11]
-                            syncResult = kernel.decodeSyncMessage(bytearray(data))
+                            #syncResult = kernel.decodeSyncMessage(bytearray(data))
                             messageToProcess = messageToProcess[11:]
                             #print("Depois: " + str(messageToProcess))
 
                         print("")
 
+                time.sleep(1)
 #                #retries = retries - 1
 
             #self.packageList.pop(0)
 
-            #time.sleep(0.1)
+
 
 
     #def listen(self):
