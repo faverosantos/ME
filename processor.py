@@ -186,7 +186,7 @@ class Processor:
                             messageToProcess = messageToProcess[5:]
                             #print("Depois: " + str(messageToProcess))
 
-                        if messageToProcess[2:3] == bytearray([0x03]):
+                        elif messageToProcess[2:3] == bytearray([0x03]):
                             print("SM_0x783 len 3 processado")
                             data = messageToProcess[3:6]
                             messageToProcess = messageToProcess[6:]
@@ -210,13 +210,13 @@ class Processor:
 
                     elif messageToProcess[0:2] == defines.SM_0x784:
                         print("SM_0x784 recebido!")
-                        print(messageToProcess)
+                        #print(messageToProcess)
 
                         if messageToProcess[2:3] == bytearray([0x03]):
                             print("SM_0x784 len 3 processado!")
                             data = messageToProcess[3:6]
                             messageToProcess = messageToProcess[6:]
-                            print("Depois: " + str(messageToProcess))
+                            #print("Depois: " + str(messageToProcess))
                             #print("Len mensagem: " + str(len(messageToProcess)))
 
                         if messageToProcess[2:3] == bytearray([0x04]):
@@ -252,11 +252,12 @@ class Processor:
 
                         print("")
 
-                    elif messageToProcess[0:1] == bytearray([0x05]):
+                    elif int.from_bytes(messageToProcess[0:2], byteorder='big') >= int.from_bytes(bytearray([0x05, 0x02]), byteorder='big') and int.from_bytes(messageToProcess[0:2], byteorder='big') <= int.from_bytes(bytearray([0x05, 0x7F]), byteorder='big'):
                         print("OBJECT_DATA recebido!")
 
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("OBJECT_DATA processado!")
+
                             data = messageToProcess[3:11]
                             objectDataResult = kernel.decodeObjectData(bytearray(data))
                             messageToProcess = messageToProcess[11:]
@@ -277,7 +278,7 @@ class Processor:
                         print("SYNC_MESSAGE recebido!")
 
                         if messageToProcess[2:3] == bytearray([0x08]):
-                            #print("SYNC_MESSAGE processado!")
+                            print("SYNC_MESSAGE processado!")
                             data = messageToProcess[3:11]
                             #syncResult = kernel.decodeSyncMessage(bytearray(data))
                             messageToProcess = messageToProcess[11:]
@@ -285,7 +286,11 @@ class Processor:
 
                         print("")
 
-                time.sleep(1)
+                    else:
+                        print("Resto: " + str(messageToProcess))
+                        messageToProcess = bytearray()
+
+                #time.sleep(2)
 #                #retries = retries - 1
 
             #self.packageList.pop(0)
