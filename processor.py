@@ -4,7 +4,7 @@ from udpserver import udpServer
 from vehicle import Vehicle
 import kernel as kernel
 import defines as defines
-from collections import deque
+import datetime
 import multiprocessing
 from multiprocessing import Queue
 
@@ -77,9 +77,11 @@ class Processor:
                 #print("F: " + str(receivedData))
                 newMessage = False
 
-                package = package + receivedData[:len(receivedData)-5]
+                if len(receivedData) != 4:
+                    package = package + receivedData[:len(receivedData)-5]
+
                 # TODO: na verdade é len(receivedData)-4, já que a posição -5 é o CRC do dado, que nesse código não está sendo tratado.
-                #print("Listened package: " + str(package) + "with size: " + str(len(package)))
+                print("Listened package: " + str(package) + "with size: " + str(len(package)))
                 #print("Listen package len:" + str(len(package)))
 
                 packageQueue.put(package)
@@ -101,7 +103,7 @@ class Processor:
         'This function is responsible for managing objects'
 
         vehicleList = list()
-        for index in range(3*defines.MAX_OBJECTS):
+        for index in range(defines.MAX_OBJECTS):
             newVehicle = Vehicle()
             vehicleList.append(newVehicle)
             del newVehicle
@@ -115,12 +117,7 @@ class Processor:
             messageToProcess = bytearray(packageQueue.get()).copy()
             #print("Processor package len:" + str(len(messageToProcess)))
 
-            #if len(messageToProcess) < 100:
-            #    print("Bypassed!")
-            #    messageToProcess = 0
-            #    PROCESS = False
-
-            #print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
+            print("Mensagem para ser processada (ANTES): " + str(messageToProcess) + "com comprimento " + str(len(messageToProcess)))
             #print("Comprimento antes: " + str(len(messageToProcess)))
             #retries = 20
 
@@ -226,6 +223,13 @@ class Processor:
                             #print("Depois: " + str(messageToProcess))
                             #print("Len mensagem: " + str(len(messageToProcess)))
 
+                        if messageToProcess[2:3] == bytearray([0x05]):
+                            print("SM_0x784 len 5 processado!")
+                            data = messageToProcess[3:8]
+                            messageToProcess = messageToProcess[8:]
+                            #print("Depois: " + str(messageToProcess))
+                            #print("Len mensagem: " + str(len(messageToProcess)))
+
                         print("")
 
                     elif messageToProcess[0:2] == defines.SM_0x785:
@@ -254,6 +258,7 @@ class Processor:
 
                     elif int.from_bytes(messageToProcess[0:2], byteorder='big') >= int.from_bytes(bytearray([0x05, 0x02]), byteorder='big') and int.from_bytes(messageToProcess[0:2], byteorder='big') <= int.from_bytes(bytearray([0x05, 0x7F]), byteorder='big'):
                         print("OBJECT_DATA recebido!")
+                        #print(messageToProcess)
 
                         if messageToProcess[2:3] == bytearray([0x08]):
                             print("OBJECT_DATA processado!")
@@ -261,16 +266,37 @@ class Processor:
                             data = messageToProcess[3:11]
                             objectDataResult = kernel.decodeObjectData(bytearray(data))
                             messageToProcess = messageToProcess[11:]
+
+                            vehicleId = objectDataResult[0]
+                            vehicleLen = objectDataResult[1]
+                            vehiclePosX = objectDataResult[2]
+                            vehiclePosY = objectDataResult[3]
+                            vehicleVelX = objectDataResult[4]
+                            vehicleVelY = objectDataResult[5]
+
                             #print("Depois: " + str(messageToProcess))
 
-                            #if len(vehicleList[id].getPosition()) == 0:
-                            #    vehicleList[id].setId(id)
-                            ##    vehicleList[id].setLen(com)
-                             #   vehicleList[id].setPosition(posX, posY)
-                            #    vehicleList[id].setVelocity(velX, velY)
+                            #  return of kernel.decodeObjectData: [objIdDec, objLenDec, posXdec, posYdec, velXdec, velYdec]
+
+                            if len(vehicleList[vehicleId].getPosition()) == 0:
+                                vehicleList[vehicleId].setId(vehicleId)
+                                vehicleList[vehicleId].setLen(vehicleLen)
+                                vehicleList[vehicleId].setPosition(vehiclePosX, vehiclePosY)
+                                vehicleList[vehicleId].setVelocity(vehicleVelX, vehicleVelY)
+                            else:
+                                vehicleList[vehicleId].setPosition(vehiclePosX, vehiclePosY)
+                                vehicleList[vehicleId].setVelocity(vehicleVelX, vehicleVelY)
+
+                            #if defines.SAMPLES_COUNTER != defines.NUMBER_OF_SAMPLES:
+                            #    defines.SAMPLES_COUNTER += 1
+                            #elif defines.SAMPLES_COUNTER == defines.NUMBER_OF_SAMPLES:
+                            #    defines.SAMPLES_COUNTER += 1
+
+                            #    self.saveRun(vehicleList)
+
                             #else:
-                            #    vehicleList[id].setPosition(posX, posY)
-                            #    vehicleList[id].setVelocity(velX, velY)
+                            #    pass
+
 
                         print("")
 
@@ -296,7 +322,22 @@ class Processor:
             #self.packageList.pop(0)
 
 
+    def saveRun(self, vehicleList):
+        identifier = str(datetime.now().replace(microsecond=0))
+        identifier = identifier.replace("-", "").replace(" ", "_").replace(":", "")
+        fileName = defines.SAVEDIR + identifier
 
+
+        for index in range(len(vehicleList)):
+            textData = "id: " + vehicleList[index].getId() + "," + \
+                       "length: " + vehicleList[index].getLen() + "," + \
+                        "class: " + vehicleList[index].getClass() + "," + \
+                        "position: " + vehicleList[index].getPosition() + "," + \
+                        "velocity: " + vehicleList[index].getVelocity() + "\n"
+
+        file2write = open(fileName + ".txt", 'w')
+        file2write.write(textData)
+        file2write.close()
 
     #def listen(self):
     #    'This is the original version of the listen function. It listens and create a package from the messages received by UDP'

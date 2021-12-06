@@ -1,11 +1,17 @@
 
-import numpy as np
+import os
 
 # Flags de controle de fluxo de software
-DEBUG_MODE = False
+DEBUG_MODE = True
+SAVE_RUN = True
 
 # Definições de valores de operações
 MAX_OBJECTS = 0x7F
+SAMPLES_COUNTER = 0
+NUMBER_OF_SAMPLES = 50
+
+# Definições de diretórios
+SAVEDIR = os.path.dirname(os.path.abspath(__file__)) + str("/Runs/")
 
 # Dados importantes para o protocolo do Doppler
 'Fonte: 2019-02-22_Doc_Data Communication UMRR Traffic Management_UMRR0C'

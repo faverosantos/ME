@@ -95,7 +95,6 @@ def decodePresenceMessage(data):
 
     return [featurePartIdDec, measurementLineDec, class0Dec, class1Dec, class2Dec, class3Dec, class4Dec]
 
-
 def decodeTimeMessage(data):
 
     kernelHelper = np.copy(data)
