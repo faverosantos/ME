@@ -4,7 +4,7 @@ from udpserver import udpServer
 from vehicle import Vehicle
 import kernel as kernel
 import defines as defines
-import datetime
+from datetime import datetime
 import multiprocessing
 from multiprocessing import Queue
 
@@ -103,7 +103,7 @@ class Processor:
         'This function is responsible for managing objects'
 
         vehicleList = list()
-        for index in range(defines.MAX_OBJECTS):
+        for index in range(2*defines.MAX_OBJECTS):
             newVehicle = Vehicle()
             vehicleList.append(newVehicle)
             del newVehicle
@@ -278,7 +278,7 @@ class Processor:
 
                             #  return of kernel.decodeObjectData: [objIdDec, objLenDec, posXdec, posYdec, velXdec, velYdec]
 
-                            if len(vehicleList[vehicleId].getPosition()) == 0:
+                            if vehicleList[vehicleId].getId() == 0:
                                 vehicleList[vehicleId].setId(vehicleId)
                                 vehicleList[vehicleId].setLen(vehicleLen)
                                 vehicleList[vehicleId].setPosition(vehiclePosX, vehiclePosY)
@@ -287,12 +287,12 @@ class Processor:
                                 vehicleList[vehicleId].setPosition(vehiclePosX, vehiclePosY)
                                 vehicleList[vehicleId].setVelocity(vehicleVelX, vehicleVelY)
 
-                            #if defines.SAMPLES_COUNTER != defines.NUMBER_OF_SAMPLES:
-                            #    defines.SAMPLES_COUNTER += 1
-                            #elif defines.SAMPLES_COUNTER == defines.NUMBER_OF_SAMPLES:
-                            #    defines.SAMPLES_COUNTER += 1
+                            if defines.SAMPLES_COUNTER != defines.NUMBER_OF_SAMPLES:
+                                defines.SAMPLES_COUNTER += 1
+                            elif defines.SAMPLES_COUNTER == defines.NUMBER_OF_SAMPLES:
+                                defines.SAMPLES_COUNTER += 1
 
-                            #    self.saveRun(vehicleList)
+                                self.saveRun(vehicleList)
 
                             #else:
                             #    pass
@@ -326,18 +326,19 @@ class Processor:
         identifier = str(datetime.now().replace(microsecond=0))
         identifier = identifier.replace("-", "").replace(" ", "_").replace(":", "")
         fileName = defines.SAVEDIR + identifier
-
+        file2write = open(fileName + ".txt", 'w')
 
         for index in range(len(vehicleList)):
-            textData = "id: " + vehicleList[index].getId() + "," + \
-                       "length: " + vehicleList[index].getLen() + "," + \
-                        "class: " + vehicleList[index].getClass() + "," + \
-                        "position: " + vehicleList[index].getPosition() + "," + \
-                        "velocity: " + vehicleList[index].getVelocity() + "\n"
+            print(index)
+            id = "id: " + str(vehicleList[index].getId()) + ","
+            comprimento = "length: " + str(vehicleList[index].getLen()) + ","
+            classe = "class: " + vehicleList[index].getClass() + ","
+            posicao = "position: " + str(vehicleList[index].getPosition()) + ","
+            velocidade = "velocity: " + str(vehicleList[index].getVelocity()) + "\n"
+            file2write.write(id + comprimento + classe + posicao + velocidade)
 
-        file2write = open(fileName + ".txt", 'w')
-        file2write.write(textData)
         file2write.close()
+        exit("saveRun says: falou meu povo!")
 
     #def listen(self):
     #    'This is the original version of the listen function. It listens and create a package from the messages received by UDP'
