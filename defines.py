@@ -2,13 +2,16 @@
 import os
 
 # Flags de controle de fluxo de software
-DEBUG_MODE = True
+DEBUG_MODE = False
 SAVE_RUN = True
+SAVE_SENSOR_DATA = False
 
 # Definições de valores de operações
 MAX_OBJECTS = 0x7F
 SAMPLES_COUNTER = 0
 NUMBER_OF_SAMPLES = 10
+PACKAGES_COUNTER = 0
+NUMBER_OF_PACKAGES = 10
 
 # Definições de diretórios
 SAVEDIR = os.path.dirname(os.path.abspath(__file__)) + str("/Runs/")

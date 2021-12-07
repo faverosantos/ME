@@ -1,5 +1,6 @@
 import numpy as np
 
+import defines
 from udpserver import udpServer
 from vehicle import Vehicle
 import kernel as kernel
@@ -66,6 +67,12 @@ class Processor:
         newMessage = False
         package = bytearray()
 
+        if defines.SAVE_SENSOR_DATA:
+            identifier = str(datetime.now().replace(microsecond=0))
+            identifier = identifier.replace("-", "").replace(" ", "_").replace(":", "")
+            fileName = defines.SAVEDIR + identifier + "_asPackages"
+            file2write = open(fileName + ".txt", 'w')
+
         while True:
             receivedData = self.myUDPServer.getData()
             if receivedData[0:4] == defines.HEADER and newMessage is False:
@@ -79,6 +86,15 @@ class Processor:
 
                 if len(receivedData) != 4:
                     package = package + receivedData[:len(receivedData)-5]
+
+                if defines.SAVE_SENSOR_DATA and defines.PACKAGES_COUNTER < defines.NUMBER_OF_PACKAGES:
+                    file2write.write(str(package) + "\n")
+                    defines.PACKAGES_COUNTER += 1
+                elif defines.SAVE_SENSOR_DATA and defines.PACKAGES_COUNTER == defines.NUMBER_OF_PACKAGES:
+                    defines.PACKAGES_COUNTER += 1
+
+                    file2write.close()
+                    print("Processor says: packages were saved!")
 
                 # TODO: na verdade é len(receivedData)-4, já que a posição -5 é o CRC do dado, que nesse código não está sendo tratado.
                 #print("Listened package: " + str(package) + "with size: " + str(len(package)))
@@ -103,7 +119,7 @@ class Processor:
         'This function is responsible for managing objects'
 
         vehicleList = list()
-        for index in range(2*defines.MAX_OBJECTS+1):
+        for index in range(2*defines.MAX_OBJECTS+2):
             newVehicle = Vehicle()
             vehicleList.append(newVehicle)
             del newVehicle
@@ -293,12 +309,14 @@ class Processor:
                                 vehicleList[vehicleId].setVelocityY(vehicleVelY)
                                 #print(vehicleList[vehicleId].getPositionX())
 
-                            if defines.SAMPLES_COUNTER != defines.NUMBER_OF_SAMPLES:
+
+                            if defines.SAVE_RUN and defines.SAMPLES_COUNTER < defines.NUMBER_OF_SAMPLES:
                                 defines.SAMPLES_COUNTER += 1
-                            elif defines.SAMPLES_COUNTER == defines.NUMBER_OF_SAMPLES:
+                            elif defines.SAVE_RUN and defines.SAMPLES_COUNTER == defines.NUMBER_OF_SAMPLES:
                                 defines.SAMPLES_COUNTER += 1
 
                                 self.saveRun(vehicleList)
+                                print("Processor says: run is saved!")
 
                             #else:
                             #    pass
@@ -349,7 +367,6 @@ class Processor:
                 file2write.write(id + comprimento + classe + posicaoX + posicaoY + velocidadeX + velocidadeY)
 
         file2write.close()
-        exit("saveRun says: falou meu povo!")
 
     #def listen(self):
     #    'This is the original version of the listen function. It listens and create a package from the messages received by UDP'
