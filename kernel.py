@@ -212,37 +212,37 @@ def decodeObjectData(data):
     posX = bitwiseAnd(defines.MASK_POSX, kernelHelper)
     posX = posX[6:8]
     posXdec = int.from_bytes(posX, byteorder='big') >> 1
-    posXdec = round((posXdec - 4096) * 0.128, 0)
-    print("posXdec: " + str(posXdec))
+    posXdec = round((posXdec - 4096) * 0.128, 2)
+    #print("posXdec: " + str(posXdec))
 
     posY = bitwiseAnd(defines.MASK_POSY, kernelHelper)
     posY = posY[4:7]
     posYdec = int.from_bytes(posY, byteorder='big') >> 6
-    posYdec = round((posYdec - 4096)*0.128, 0)
-    print("posYdec: " + str(posYdec))
+    posYdec = round((posYdec - 4096) * 0.128, 2)
+    #print("posYdec: " + str(posYdec))
 
     velX = bitwiseAnd(defines.MASK_VELX, kernelHelper)
     velX = velX[3:5]
     velXdec = int.from_bytes(velX, byteorder='big') >> 3
-    velXdec = round((velXdec - 1024) * 0.1 / 3.6, 0)
-    print("velXdec: " + str(velXdec))
+    velXdec = round((velXdec - 1024) * 0.1 / 3.6, 2)
+    #print("velXdec: " + str(velXdec))
 
     velY = bitwiseAnd(defines.MASK_VELY, kernelHelper)
     velY = velY[1:4]
     velYdec = int.from_bytes(velY, byteorder='big') >> 6
-    velYdec = round((velYdec - 1024) * 0.1 / 3.6, 0)
-    print("velYdec: " + str(velYdec))
+    velYdec = round((velYdec - 1024) * 0.1 / 3.6, 2)
+    #print("velYdec: " + str(velYdec))
 
     objLen = bitwiseAnd(defines.OBJECT_LEN, kernelHelper)
     objLen = objLen[1:2]
     objLenDec = int.from_bytes(objLen, byteorder='big') >> 1
-    objLenDec = round((objLenDec) * 0.2, 0)
-    print("objLenDec: " + str(objLenDec))
+    objLenDec = round((objLenDec) * 0.2, 2)
+    #print("objLenDec: " + str(objLenDec))
 
     objId = bitwiseAnd(defines.OBJECT_ID, kernelHelper)
     objId = objId[0:1]
     objIdDec = int.from_bytes(objId, byteorder='big')
-    print("objIdDec: " + str(objIdDec))
+    #print("objIdDec: " + str(objIdDec))
 
     return [objIdDec, objLenDec, posXdec, posYdec, velXdec, velYdec]
 

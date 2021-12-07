@@ -3,12 +3,20 @@ class Vehicle:
     id = 0
     len = 0
     position = 0
+    positionX = 0
+    positionY = 0
+    velocityX = 0
+    velocityY = 0
     velocity = 0
     type = "bird"
 
     def __init__(self):
         self.position = list()
         self.velocity = list()
+        self.positionX = list()
+        self.positionY = list()
+        self.velocityX = list()
+        self.velocityY = list()
 
     def setId(self, id):
         self.id = id
@@ -41,6 +49,18 @@ class Vehicle:
     def getClass(self):
         return self.type
 
+    def getPositionX(self):
+        return self.positionX
+
+    def getPositionY(self):
+        return self.positionY
+
+    def setPositionX(self, posX):
+        self.positionX.append(posX)
+
+    def setPositionY(self, posY):
+        self.positionY.append(posY)
+
     def setPosition(self, posX, posY):
         pair = (posX, posY)
         self.position.append(pair)
@@ -48,6 +68,18 @@ class Vehicle:
     def setVelocity(self, velX, velY):
         pair = (velX, velY)
         self.velocity.append(pair)
+
+    def setVelocityX(self, velX):
+        self.velocityX.append(velX)
+
+    def setVelocityY(self, velY):
+        self.velocityY.append(velY)
+
+    def getVelocityX(self):
+        return self.velocityX
+
+    def getVelocityY(self):
+        return self.velocityY
 
     def getPosition(self):
         return self.position

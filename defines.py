@@ -8,7 +8,7 @@ SAVE_RUN = True
 # Definições de valores de operações
 MAX_OBJECTS = 0x7F
 SAMPLES_COUNTER = 0
-NUMBER_OF_SAMPLES = 50
+NUMBER_OF_SAMPLES = 10
 
 # Definições de diretórios
 SAVEDIR = os.path.dirname(os.path.abspath(__file__)) + str("/Runs/")
